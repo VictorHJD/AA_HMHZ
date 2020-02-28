@@ -62,6 +62,11 @@ Genus.samples$Bacteroides.trans<- round(log10(Genus.samples$Bacteroides+1)*10000
 
 Genus.samples$Helicobacter.trans<- round(log10(Genus.samples$Helicobacter+1)*10000)
 Genus.samples$Blautia.trans<- round(log10(Genus.samples$Blautia+1)*10000)
+Genus.samples$Lactobacillus.trans<- round(log10(Genus.samples$Lactobacillus+1)*10000)
+Genus.samples$Clostridium.trans<- round(log10(Genus.samples$Clostridium+1)*10000)
+Genus.samples$Fusimonas.trans<- round(log10(Genus.samples$Fusimonas+1)*10000)
+Genus.samples$Muribaculum.trans<- round(log10(Genus.samples$Muribaculum+1)*10000)
+
 
 ##Diversity index
 ##Small adjustment for a sample with NA
@@ -439,6 +444,17 @@ Blautia.plot <- parasiteLoad::bananaPlot(mod = Blautia$H1,
                                               islog10 = T, group = "Seq_Run",
                                               cols = c("#006A4E", "#006A4E"))+ labs(tag = "C)")+
   ggtitle("Blautia")+
+  xlab("Mouse genotype (Hybrid Index)")+
+  ylab("log 10 transformed rel. abundance")+
+  theme(legend.position ="none")
+
+Lactobacillus<- parasiteLoad::analyse(data = Genus.samples[Genus.samples$Lactobacillus.trans>0,], response = "Lactobacillus.trans", model = "negbin", group = "Seq_Run")
+Lactobacillus.plot <- parasiteLoad::bananaPlot(mod = Lactobacillus$H1,
+                                         data = Genus.samples[Genus.samples$Lactobacillus.trans>0,],
+                                         response = "Lactobacillus.trans",
+                                         islog10 = T, group = "Seq_Run",
+                                         cols = c("#006A4E", "#006A4E"))+ labs(tag = "C)")+
+  ggtitle("Lactobacillus")+
   xlab("Mouse genotype (Hybrid Index)")+
   ylab("log 10 transformed rel. abundance")+
   theme(legend.position ="none")
