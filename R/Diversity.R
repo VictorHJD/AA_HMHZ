@@ -221,5 +221,16 @@ adonis(dis.eukaryota ~ HI+Longitude+Latitude+Year+Chip_number+Concentration+Seq_
 adonis(dis.eukaryota ~ HI+Genotype+Year+Longitude+Latitude+Transect, data = sdt.eukaryota.H, permutations = 9999)
 
 ##Multivariate extension of GLMs
-install.packages("mvabund")
 library("mvabund")
+
+boxplot(HMHZabund, horizontal= T, las=2, transformation = "no", main= "Relative abundance")
+plot(HMHZabund, transformation = "no")
+meanvar.plot(HMHZabund)
+
+model.HMHZ<- manyglm(HMHZabund ~ Genus.samples$HI, family="negative_binomial", permutations= 9999)
+plot(model.HMHZ)
+anova(model.HMHZ)
+anova(model.HMHZ, p.uni="adjusted")
+
+model.HMHZ2<- manyglm(HMHZabund ~ Genus.samples$HI, family="poisson")
+plot(model.HMHZ2)

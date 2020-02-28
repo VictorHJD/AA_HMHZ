@@ -291,7 +291,7 @@ d<- g +
 
 e<- grid.arrange(a, b, c, d, ncol= 2, nrow= 2)
 
-ggsave(file = "~/AA_HMHZ/ML_Analysis/Main_taxa.pdf", plot = e, width = 15, height = 10)
+#ggsave(file = "~/AA_HMHZ/ML_Analysis/Main_taxa.pdf", plot = e, width = 15, height = 10)
 
 ####Analysis### (Move later to a different R script)
 ###Square root transformation of the data to assess Bray-Curtis dissimilarity
@@ -383,14 +383,14 @@ bc.geo<- mantel(Genus.bctRA, geo.dist, method = "spearman", permutations = 9999,
 ## The more separated the mice are, their bacterial/eukaryotic communities (at Phylum level) do not become more dissimilar 
 
 ##Non-metric Multidimensional Scaling (NMDS)
-NMDS.scree(Phylum.bctRA)
-set.seed(2)
+#NMDS.scree(Phylum.bctRA)
+#set.seed(2)
 # Here, we perform the final analysis and check the result
-NMDS1 <- metaMDS(Phylum.bctRA, k = 5, trymax = 1000, trace = F)
-stressplot(NMDS1)
-orditorp(NMDS1, display = "sites")
+#NMDS1 <- metaMDS(Phylum.bctRA, k = 5, trymax = 1000, trace = F)
+#stressplot(NMDS1)
+#orditorp(NMDS1, display = "sites")
 
-##Create matrix for PCA and NMDS
+##Create data frame with RA for ML analysis
 HMHZPhy%>%
   select_(1,2,3) %>%
   group_by(Mouse_ID)%>%
@@ -404,66 +404,66 @@ rownames(Phylum.samples)<-Phylum.samples[,1]
 Phylum.RA[,1]<- NULL
 Phylum.samples[,1]<- NULL ##Phylum.samples is the file required for the Maximum likelihood analysis
 
-NMDS2<- metaMDS(Phylum.RA, k=5, trymax = 1000, autotransform = FALSE, distance="bray")
-stressplot(NMDS2)
+#NMDS2<- metaMDS(Phylum.RA, k=5, trymax = 1000, autotransform = FALSE, distance="bray")
+#stressplot(NMDS2)
 
-plot(NMDS2, display = "species")
-points(NMDS2, display = "species", col= "green", cex= 1.5, pch= 20)
-text(NMDS2, display = "species", pos= 1, cex= 0.75)
+#plot(NMDS2, display = "species")
+#points(NMDS2, display = "species", col= "green", cex= 1.5, pch= 20)
+#text(NMDS2, display = "species", pos= 1, cex= 0.75)
 
-plot(NMDS2, display = "sites")
-points(NMDS2, display = "sites", col= "purple", cex= 1.5, pch= 20)
-text(NMDS2, display = "species", pos= 1, cex= 0.75)
+#plot(NMDS2, display = "sites")
+#points(NMDS2, display = "sites", col= "purple", cex= 1.5, pch= 20)
+#text(NMDS2, display = "species", pos= 1, cex= 0.75)
 
 ##Create data frame for composition plot 
-HMHZPhy%>%
-  select_(1,2,3) %>%
-  group_by(Mouse_ID)%>%
-  mutate(Main_taxa= meanRA>= 0.10)%>%
-  group_by(Mouse_ID)%>%
-  mutate(phylum= case_when(Main_taxa== FALSE ~ "Taxa less represented", TRUE ~ as.character(phylum))) %>%
-  arrange(Mouse_ID, desc(phylum))-> HMHZPhy
+#HMHZPhy%>%
+#  select_(1,2,3) %>%
+#  group_by(Mouse_ID)%>%
+#  mutate(Main_taxa= meanRA>= 0.10)%>%
+#  group_by(Mouse_ID)%>%
+#  mutate(phylum= case_when(Main_taxa== FALSE ~ "Taxa less represented", TRUE ~ as.character(phylum))) %>%
+#  arrange(Mouse_ID, desc(phylum))-> HMHZPhy
 
 ### Let's plot 
-ggplot(data=HMHZPhy, aes(x= Mouse_ID, y= meanRA, fill= phylum)) +
-  scale_fill_manual(values = c( "#A6CEE3","#1F78B4","#B2DF8A","#33A02C","#FB9A99",
-                                "#E31A1C","#FDBF6F","#FF7F00","#CAB2D6","#6A3D9A","#FFFF99",
-                                "#B15928","#1B9E77","#D95F02","#7570B3","#E7298A", "#666666", "#66A61E","#E6AB02")) +
-  geom_bar(aes(), stat="identity", position="fill") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 1)) +
-  labs(x = "Mouse ID", y= "Relative abundance", tag = "E)")+
-  guides(fill= guide_legend(nrow = 11))
+#ggplot(data=subset(HMHZPhy, Main_taxa==T), aes(x= Mouse_ID, y= meanRA, fill= phylum)) +
+#  scale_fill_manual(values = c( "#A6CEE3","#1F78B4","#B2DF8A","#33A02C","#FB9A99",
+#                                "#E31A1C","#FDBF6F","#FF7F00","#CAB2D6","#6A3D9A","#FFFF99",
+#                                "#B15928","#1B9E77","#D95F02","#7570B3","#E7298A", "#666666", "#66A61E","#E6AB02")) +
+#  geom_bar(aes(), stat="identity", position="fill") +
+#  theme_bw() +
+#  theme(axis.text.x = element_text(angle = 90, vjust = 1)) +
+#  labs(x = "Mouse ID", y= "Relative abundance", tag = "E)")+
+#  guides(fill= guide_legend(nrow = 11))
 
-require("factoextra")
-require("FactoMineR")
-Phylum.pca<- PCA(Phylum.RA, graph = T)
-Phylum.eig<- get_eigenvalue(Phylum.pca)
-fviz_eig(Phylum.pca, addlabels = TRUE, ylim = c(0, 25))
+#require("factoextra")
+#require("FactoMineR")
+#Phylum.pca<- PCA(Phylum.RA, graph = T)
+#Phylum.eig<- get_eigenvalue(Phylum.pca)
+#fviz_eig(Phylum.pca, addlabels = TRUE, ylim = c(0, 25))
 
-fviz_pca_ind(Phylum.pca,
-             geom.ind = "point", # show points only (but not "text")
-             col.ind = Phylum.samples$HI, # color by groups
-             gradient.cols = c("blue", "red"),
-             alpha.ind = 0.7,
-             addEllipses = F, # Concentration ellipses
-             legend.title = "Hybrid \nIndex")+
-  labs(tag = "A)")
+#fviz_pca_ind(Phylum.pca,
+#             geom.ind = "point", # show points only (but not "text")
+#             col.ind = Phylum.samples$HI, # color by groups
+#             gradient.cols = c("blue", "red"),
+#             alpha.ind = 0.7,
+#             addEllipses = F, # Concentration ellipses
+#             legend.title = "Hybrid \nIndex")+
+#  labs(tag = "A)")
 
-fviz_pca_var(Phylum.pca, col.var = "cos2", select.var =  list(contrib = 10), ##top ten taxa contributing
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
-             repel = TRUE )+ # Avoid text overlapping
-  labs(tag = "B)")
+#fviz_pca_var(Phylum.pca, col.var = "cos2", select.var =  list(contrib = 10), ##top ten taxa contributing
+#             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+#             repel = TRUE )+ # Avoid text overlapping
+#  labs(tag = "B)")
 
 ###GLM
 #Can the relative abundance at Phylum level predict the genotype of host?
 
-Phylum.samples -> Phylum.model
-Phylum.model<- subset(Phylum.model, select = -c(31:69))
-Phylum.model<- subset(Phylum.model, select = c(1:31))
+#Phylum.samples -> Phylum.model
+#Phylum.model<- subset(Phylum.model, select = -c(31:69))
+#Phylum.model<- subset(Phylum.model, select = c(1:31))
 
-modelPhy <- glm(HI~ ., data = Phylum.model)
-summary(modelPhy)
+#modelPhy <- glm(HI~ ., data = Phylum.model)
+#summary(modelPhy)
 
 ##Genus all
 HMHZGen%>%
@@ -477,56 +477,56 @@ rownames(Genus.RA)<-Genus.RA[,1]
 Genus.samples<-join(Genus.RA, sdt, by= "Mouse_ID")
 rownames(Genus.samples)<-Genus.samples[,1]
 Genus.RA[,1]<- NULL
-Genus.samples[,1]<- NULL
+Genus.samples[,1]<- NULL ##Genus samples is the file required for Maximum Likelihood analysis
 
-Genus.samples -> Genus.model
-Genus.model<- subset(Genus.model, select = -c(644:682))
-Genus.model<- subset(Genus.model, select = c(1:644))
+#Genus.samples -> Genus.model
+#Genus.model<- subset(Genus.model, select = -c(644:682))
+#Genus.model<- subset(Genus.model, select = c(1:644))
 
-modelGen <- glm(HI~ ., data = Genus.model)
-summary(modelGen)
-plot_model(modelPhy)
+#modelGen <- glm(.~HI,  data = Genus.model)
+#summary(modelGen)
+#plot_model(modelPhy)
 
 ###Correlation 
-require(ggpubr)
-ggplot(Phylum.samples, aes(Nematoda, Proteobacteria, color= HI))+
-  scale_color_gradient(low="blue", high="red", name= "Mouse genotype\n(Hybird Index)")+
-  geom_point(size= 3)+
-  geom_smooth(method = lm)+
-  xlab("Relative abundance (Nematoda)")+
-  ylab("Relative abundance (Proteobacteria)")+
+#require(ggpubr)
+#ggplot(Phylum.samples, aes(Nematoda, Proteobacteria, color= HI))+
+#  scale_color_gradient(low="blue", high="red", name= "Mouse genotype\n(Hybird Index)")+
+#  geom_point(size= 3)+
+#  geom_smooth(method = lm)+
+#  xlab("Relative abundance (Nematoda)")+
+#  ylab("Relative abundance (Proteobacteria)")+
   #labs(tag= "A)")+
-  theme_bw()+
-  stat_cor(label.x = 0.5, label.y = 0.25, aes(label= paste(..rr.label.., ..p.label.., sep= "~`,`~"))) +
-  stat_regline_equation(label.x = 0.5, label.y = 0.27)
+#  theme_bw()+
+#  stat_cor(label.x = 0.5, label.y = 0.25, aes(label= paste(..rr.label.., ..p.label.., sep= "~`,`~"))) +
+#  stat_regline_equation(label.x = 0.5, label.y = 0.27)
 
 ###Prevalence estimation
 ###Kazachstania
-(sum(Genus.samples$Kazachstania>0)/sum(Genus.samples$Kazachstania>=0))*100
+#(sum(Genus.samples$Kazachstania>0)/sum(Genus.samples$Kazachstania>=0))*100
 
 ###Syphacia
-(sum(Genus.samples$Syphacia>0)/sum(Genus.samples$Syphacia>=0))*100
+#(sum(Genus.samples$Syphacia>0)/sum(Genus.samples$Syphacia>=0))*100
 
 ##Aspiculuris
-(sum(Genus.samples$Aspiculuris>0)/sum(Genus.samples$Aspiculuris>=0))*100
+#(sum(Genus.samples$Aspiculuris>0)/sum(Genus.samples$Aspiculuris>=0))*100
 
 ###Eimeria
-(sum(Genus.samples$Eimeria>0)/sum(Genus.samples$Eimeria>=0))*100
+#(sum(Genus.samples$Eimeria>0)/sum(Genus.samples$Eimeria>=0))*100
 
 ###Bacteroides
-(sum(Genus.samples$Bacteroides>0)/sum(Genus.samples$Bacteroides>=0))*100
+#(sum(Genus.samples$Bacteroides>0)/sum(Genus.samples$Bacteroides>=0))*100
 
 ###Helicobacter
-(sum(Genus.samples$Helicobacter>0)/sum(Genus.samples$Helicobacter>=0))*100
+#(sum(Genus.samples$Helicobacter>0)/sum(Genus.samples$Helicobacter>=0))*100
 
 ###Blautia
-(sum(Genus.samples$Blautia>0)/sum(Genus.samples$Blautia>=0))*100
+#(sum(Genus.samples$Blautia>0)/sum(Genus.samples$Blautia>=0))*100
 
 ##Cryptosporidium
-(sum(Genus.samples$Cryptosporidium>0)/sum(Genus.samples$Cryptosporidium>=0))*100
+#(sum(Genus.samples$Cryptosporidium>0)/sum(Genus.samples$Cryptosporidium>=0))*100
 
 ##Tritrichomonas
-(sum(Genus.samples$Tritrichomonas>0)/sum(Genus.samples$Tritrichomonas>=0))*100
+#(sum(Genus.samples$Tritrichomonas>0)/sum(Genus.samples$Tritrichomonas>=0))*100
 
 ##Hymenolepis
-(sum(Genus.samples$Hymenolepis>0)/sum(Genus.samples$Hymenolepis>=0))*100
+#(sum(Genus.samples$Hymenolepis>0)/sum(Genus.samples$Hymenolepis>=0))*100
