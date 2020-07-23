@@ -1,17 +1,18 @@
 ###Phyloseq pipeline for diversity analysis
-
+library("lifecycle", lib.loc="/usr/local/lib/R/site-library") 
 library(ggplot2)
 library(reshape)
 library(phyloseq)
 library(data.table)
 library(parallel)
-library(microbiome)
+library("microbiome")
 library("pheatmap")
-library(dplyr)
+library("dplyr")
 library(gridExtra)
 library(grid)
 library(vegan)
 library("TmCalculator")
+library("tidyverse")
 
 ##Functions
 sumSeqByTax <- function(PS.l, rank) {
@@ -527,3 +528,110 @@ lapply(spa3, corPlot)
 dev.off()
 
 names(spa3)
+
+###Extract data from 16S V4 fro proposal plots
+PS.16S <- PS.l$`515F_Y_118_F.806R_118_R`
+PS.16S<- subset_taxa(PS.16S, !is.na(phylum) & !phylum %in% c("", "uncharacterized"))
+Prev16S <- apply(X = otu_table(PS.16S),
+                  MARGIN = ifelse(taxa_are_rows(PS.16S), yes = 1, no = 2),
+                  FUN = function(x){sum(x > 0)})
+
+Prev16S <- data.frame(Prevalence = Prev16S,
+                       TotalAbundance = taxa_sums(PS.16S),
+                       tax_table(PS.16S))
+
+plyr::ddply(Prev16S, "phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+
+# Define phyla to filter (present in less than 5% of samples)
+filterPhyla <- c("Candidatus Melainabacteria", "Elusimicrobia", "Fusobacteria", "Spirochaetes") ###For the full dataset
+PS1.16S <- subset_taxa(PS.16S, !phylum %in% filterPhyla)
+
+qplot(log10(rowSums(otu_table(PS1.16S))),binwidth=0.2) +
+  xlab("Log10 counts-per-sample")+ ylab("Count")+
+  theme_bw()+
+  labs(tag = "A)")
+
+##Normalize data
+PS.16S.log <- transform_sample_counts(PS1.16S, function(x) log(1 + x))
+
+plot_bar(PS1.16S, fill="phylum") + facet_wrap(~Year, scales= "free_x", nrow=1)
+p2<- plot_richness(PS1.16S, x="Year", measures=c("Chao1", "Shannon", "Simpson"))+ 
+  geom_boxplot()+
+  geom_jitter(aes(fill=Year), colour="black",pch=21, size=2)+
+  labs(tag = "B)")+
+  theme_bw()
+
+###Barplots by Phylum
+AbPhy%>%
+  filter(Primer_name=="515F_Y_118_F.806R_118_R")%>%
+  dplyr::select(1,2,3,4,5,13)%>%
+  group_by(Phyla)%>%
+  arrange(Phyla, desc(Relative_abundance))-> Phylum_16S #%>%
+  #dplyr::mutate(Total_Phylum_count = sum(Read_count))%>%
+  #dplyr::mutate(Relative_abundance_primer= Read_count/Total_Phylum_count)%>%
+  #dplyr::mutate(Main_primer= Relative_abundance_primer>= 0.05)%>%
+  #dplyr::mutate(Primer_comb_ID= case_when(Main_primer== FALSE ~ "Primer less dominant", TRUE ~ as.character(Primer_comb_ID))) %>%
+  #arrange(Phyla, desc(Primer_comb_ID))
+  
+
+library(RColorBrewer)
+ra16s<- ggplot(data=Phylum_16S, aes(x= Gen, y= Relative_abundance, fill= Phyla)) +
+  scale_fill_brewer(palette = "Paired") + 
+  labs(title = "Relative abundance by phylum")+
+  geom_bar(aes(), stat="identity", position="fill") +
+  theme_bw() +
+  theme(axis.text.x=element_blank(),axis.ticks=element_blank()) +
+  labs(y= "Relative abundance", tag = "C)")+
+  guides(fill= guide_legend(nrow = 8))
+
+
+##Simple ordination
+PS1.16S <- prune_samples(sample_sums(PS1.16S)>1, PS1.16S)
+
+PS.ord <- ordinate(PS1.16S, "PCoA", "bray")
+p3 <- plot_ordination(PS1.16S, PS.ord, type="taxa", color="phylum", title="Taxa")+ 
+  theme(aspect.ratio=1)+
+  theme_bw()+
+  geom_point(aes(fill=phylum), colour="black",pch=21, size=5)+
+  labs(tag = "C)")
+
+p4 <- plot_ordination(PS1.16S, PS.ord, type="samples", color="Year", title="Samples")+ 
+  theme(aspect.ratio=1)+
+  theme_bw()+
+  geom_point(aes(fill=Year), colour="black",pch=21, size=5)+
+  labs(tag = "D)")
+
+sample.data<- sample_data(PS1.16S)
+
+require("ggmap")
+areamus <- get_map(location =
+                     c(min(sample.data$Longitude - 0.5),
+                       min(sample.data$Latitude - 0.5),
+                       max(sample.data$Longitude + 0.5),
+                       max(sample.data$Latitude + 0.5)),
+                   maptype= "satellite", zoom = 8)
+
+#source = "stamen", 
+
+p1<- ggmap(areamus)+
+  geom_point(data = sample.data, shape = 21, size = 5, aes(Longitude, Latitude, fill= Year))+
+  labs(tag = "A)")
+
+require("gridExtra")
+require("grid")
+
+p2.2<- grid.arrange(p2, ra16s, p4, heights = c(2, 1, 1), widths = c(1, 1), layout_matrix = rbind(c(1, 1), c(2, 2), c(3,3)))
+
+require("ggpubr")
+pfinal<- ggarrange(p1, p2.2, widths = c(1.5,2))
+
+pdf(file = "~/AA_ARGs_Mice/Preliminary_work/Fig_1.2.pdf", width = 15, height = 10)
+ggarrange(p1, p2.2, widths = c(1.5,2))
+dev.off()
+
+ggsave(file="~/AA_ARGs_Mice/Preliminary_work/Fig_1.2.svg", plot=pfinal, width=15, height=10)
+
+#PS.16S <- phyloseq(otu_table(PS.l$`515F_Y_118_F.806R_118_R`), 
+#                    sample_data(PS.l$`515F_Y_118_F.806R_118_R`), 
+#                    tax_table(PS.l$`515F_Y_118_F.806R_118_R`), 
+#                    phy_tree(fitGTRV3V4$tree))

@@ -223,6 +223,7 @@ adonis(dis.eukaryota ~ HI+Genotype+Year+Longitude+Latitude+Transect, data = sdt.
 ##Multivariate extension of GLMs
 library("mvabund")
 
+HMHZabund<- mvabund(Genus.RA)
 boxplot(HMHZabund, horizontal= T, las=2, transformation = "no", main= "Relative abundance")
 plot(HMHZabund, transformation = "no")
 meanvar.plot(HMHZabund)
@@ -232,5 +233,40 @@ plot(model.HMHZ)
 anova(model.HMHZ)
 anova(model.HMHZ, p.uni="adjusted")
 
-model.HMHZ2<- manyglm(HMHZabund ~ Genus.samples$HI, family="poisson")
+##Let's see whether the chip number is more significant that the HI
+model.HMHZ2<-model.HMHZ<- manyglm(HMHZabund ~ Genus.samples$HI*Genus.samples$Chip_number, 
+                                  family="negative_binomial", permutations= 9999)
 plot(model.HMHZ2)
+anova(model.HMHZ2)
+
+## Use a more complex model including same parameter than in adonis test
+model.HMHZ3<-model.HMHZ<- manyglm(HMHZabund ~ Genus.samples$HI+Genus.samples$Year+Genus.samples$Transect+Genus.samples$Longitude+Genus.samples$Latitude+Genus.samples$Sex, 
+                                  family="negative_binomial", permutations= 9999)
+
+plot(model.HMHZ3)
+anova(model.HMHZ3)
+
+## More complex model with biological and technical 
+model.HMHZ4<- manyglm(HMHZabund ~ Genus.samples$HI+Genus.samples$Year+
+                                  Genus.samples$Sex+Genus.samples$BMI+
+                                    Genus.samples$Transect+Genus.samples$Longitude+
+                                    Genus.samples$Latitude+Genus.samples$Chip_number+
+                                    Genus.samples$Concentration+Genus.samples$Seq_Run, 
+                                  family="negative_binomial", permutations= 9999)
+
+model.HMHZ5<- manyglm(HMHZabund ~ Genus.samples$HI+Genus.samples$Year+
+                        Genus.samples$Sex+Genus.samples$BMI+
+                        Genus.samples$Transect+Genus.samples$Longitude+
+                        Genus.samples$Latitude+Genus.samples$Chip_number+
+                        Genus.samples$Concentration+Genus.samples$Seq_Run, 
+                      family="negative_binomial", permutations= 9999) #Composition= T (test later)
+
+plot(model.HMHZ5)
+model.4 <- anova(model.HMHZ4, p.uni="adjusted")
+model.4
+
+model.5<- anova.manyglm(model.HMHZ5, p.uni="adjusted", nBoot= 9999, test="LR", resamp="montecarlo")
+model.5
+plot.manyglm(model.5)
+
+

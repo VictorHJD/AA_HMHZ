@@ -459,6 +459,39 @@ Lactobacillus.plot <- parasiteLoad::bananaPlot(mod = Lactobacillus$H1,
   ylab("log 10 transformed rel. abundance")+
   theme(legend.position ="none")
 
+Clostridium<- parasiteLoad::analyse(data = Genus.samples[Genus.samples$Clostridium.trans>0,], response = "Clostridium.trans", model = "negbin", group = "Seq_Run")
+Clostridium.plot <- parasiteLoad::bananaPlot(mod = Clostridium$H1,
+                                               data = Genus.samples[Genus.samples$Clostridium.trans>0,],
+                                               response = "Clostridium.trans",
+                                               islog10 = T, group = "Seq_Run",
+                                               cols = c("#006A4E", "#006A4E"))+ labs(tag = "C)")+
+  ggtitle("Clostridium")+
+  xlab("Mouse genotype (Hybrid Index)")+
+  ylab("log 10 transformed rel. abundance")+
+  theme(legend.position ="none")
+
+Fusimonas<- parasiteLoad::analyse(data = Genus.samples[Genus.samples$Fusimonas.trans>0,], response = "Fusimonas.trans", model = "negbin", group = "Seq_Run")
+Fusimonas.plot <- parasiteLoad::bananaPlot(mod = Fusimonas$H1,
+                                               data = Genus.samples[Genus.samples$Fusimonas.trans>0,],
+                                               response = "Fusimonas.trans",
+                                               islog10 = T, group = "Seq_Run",
+                                               cols = c("#006A4E", "#006A4E"))+ labs(tag = "C)")+
+  ggtitle("Fusimonas")+
+  xlab("Mouse genotype (Hybrid Index)")+
+  ylab("log 10 transformed rel. abundance")+
+  theme(legend.position ="none")
+
+Muribaculum<- parasiteLoad::analyse(data = Genus.samples[Genus.samples$Muribaculum.trans>0,], response = "Muribaculum.trans", model = "negbin", group = "Seq_Run")
+Muribaculum.plot <- parasiteLoad::bananaPlot(mod = Muribaculum$H1,
+                                               data = Genus.samples[Genus.samples$Muribaculum.trans>0,],
+                                               response = "Muribaculum.trans",
+                                               islog10 = T, group = "Seq_Run",
+                                               cols = c("#006A4E", "#006A4E"))+ labs(tag = "C)")+
+  ggtitle("Muribaculum")+
+  xlab("Mouse genotype (Hybrid Index)")+
+  ylab("log 10 transformed rel. abundance")+
+  theme(legend.position ="none")
+
 ##Multiple comparisons correction
 Input<- read.csv("~/AA_HMHZ/ML_Analysis/Maximum_likelihood_results.csv")
 Input%>%
@@ -536,6 +569,10 @@ dev.off()
 
 pdf(file = "~/AA_HMHZ/ML_Analysis/ML_Genus_Eimeria.pdf", width = 10, height = 8)
 Eimeria.plot
+dev.off()
+
+pdf(file = "~/AA_HMHZ/ML_Analysis/ML_Genus_Tritrichomonas.pdf", width = 10, height = 8)
+Tritrichomonas.plot
 dev.off()
 
 pdf(file = "~/AA_HMHZ/ML_Analysis/ML_Genus_Helicobacter.pdf", width = 10, height = 8)
